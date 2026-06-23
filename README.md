@@ -1,11 +1,8 @@
-========================================================================
-PROYECTO DELFÍN - GESTIÓN DOCUMENTAL CON AGENTES DE IA
+
 Artefacto: Guía Técnica de Configuración Local y Despliegue RAG
 Autora: Yeraldin Arboleda Quintero
-Modalidad: Pasantía de Investigación - Programa DELFÍN
 Docente Investigador: Ricardo Andrés Santa Quintero (U. Libre)
 Fecha de Publicación: Junio 2026
-========================================================================
 -->
 Guía Técnica de Configuración Local y Despliegue RAG
 
@@ -169,41 +166,4 @@ Vaya a la pestaña Knowledge, cree una nueva base de conocimiento local y cargue
 Paso 3 — Orquestación del Agente (Studio):
 Vaya a Studio, cree un nuevo Agente de Chat, asígnele la base de conocimiento creada en el paso anterior y defina el prompt del sistema para restringir las respuestas exclusivamente al contexto documental provisto.
 
-<<<<<<< HEAD
-Paso 4 — Validación del Sistema:
-Realice consultas de prueba para verificar que el agente recupera información correctamente desde los documentos locales.
 
-
-✅ Resultado esperado: Un entorno RAG funcional en localhost capaz de responder consultas analíticas sobre los archivos soporte sin comprometer la privacidad de los datos de los estudiantes.
-
-
-
-
-6. Resolución de Problemas (FAQ)
-
-P: ¿Por qué Dify no se conecta con Ollama si ambos están en la misma máquina?
-R: Al estar Dify dentro de contenedores Docker, no puede acceder a localhost del host directamente. Se debe usar la dirección puente de Docker: http://host.docker.internal:11434/. Esta dirección resuelve automáticamente hacia la IP de la máquina anfitriona.
-
-
-P: El procesamiento de documentos en Knowledge se queda congelado o en estado "pendiente".
-R: Esto ocurre cuando no hay un modelo de embeddings configurado o no está disponible en Ollama. Verifique con:
-
-bashollama list
-# Debe mostrar tanto llama3 como nomic-embed-text
-
-Si nomic-embed-text no aparece, ejecútelo de nuevo:
-
-bashollama pull nomic-embed-text
-
-
-P: Docker no arranca o los contenedores de Dify no inician correctamente.
-R: Asegúrese de que WSL2 está habilitado y que Docker Desktop tiene asignados suficientes recursos (mínimo 8 GB de RAM en la configuración de Docker). Revise los logs con:
-
-bashdocker compose logs -f
-
-
-7. Glosario
-
-TérminoDefiniciónAgente de IASistema autónomo que percibe su entorno y ejecuta acciones encadenadas para lograr un objetivo sin intervención constante del usuario.RAGGeneración Aumentada por Recuperación; técnica que combina un LLM con fuentes de datos vectorizadas para reducir alucinaciones.DifyPlataforma open-source para desarrollo de aplicaciones con LLMs, con soporte nativo para RAG y agentes.OllamaHerramienta para ejecutar modelos de lenguaje de gran escala de forma local, sin dependencia de APIs externas.EmbeddingsRepresentaciones numéricas (vectores) de textos que permiten medir su similitud semántica para la recuperación de información.LocalhostDirección IP loopback (127.0.0.1) que hace referencia a la propia máquina del desarrollador.DockerPlataforma de contenerización que empaqueta aplicaciones y sus dependencias en entornos aislados y reproducibles.Sprint S004Fase del proyecto correspondiente a la generación de analítica y resultados, presentada como dashboard HTML/JS/CSS local.
-=======
->>>>>>> 6519762 (Modificando readme)
