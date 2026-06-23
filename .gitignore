@@ -1,0 +1,12 @@
+Base_Datos/
+Base_Conocimiento/
+*.pdf
+*.docx
+*.xlsx
+*.pptx
+*.jpg
+*.zip
+*.doc
+*.txt
+venv/
+.venv/
