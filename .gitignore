@@ -1,3 +1,4 @@
+# Carpetas de datos y archivos prohibidos
 Base_Datos/
 Base_Conocimiento/
 *.pdf
@@ -10,3 +11,6 @@ Base_Conocimiento/
 *.txt
 venv/
 .venv/
+
+# EXCEPCIÓN: Permitir el archivo de dependencias
+!requirements.txt
