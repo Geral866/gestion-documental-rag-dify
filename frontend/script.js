@@ -1,23 +1,50 @@
-async function enviarPregunta() {
-    const inputElement = document.getElementById('userInput');
-    const input = inputElement.value;
-    const chatBox = document.getElementById('chat-box');
-    
-    // Mostrar lo que el usuario escribió
-    chatBox.innerHTML += `<p><b>Tú:</b> ${input}</p>`;
-    inputElement.value = ''; // Limpiar campo
-    
+async function enviarMensaje() {
+    const input = document.getElementById("input-usuario");
+    const pregunta = input.value.trim();
+    if (!pregunta) return;
+
+    agregarMensaje("usuario", pregunta);
+    input.value = "";
+    agregarMensaje("bot", "⏳ Consultando...", "loading");
+
     try {
-        const response = await fetch('http://127.0.0.1:8000/api/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pregunta: input })
+        const res = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ pregunta })
         });
-        
-        const data = await response.json();
-        // Mostrar respuesta de la IA
-        chatBox.innerHTML += `<p><b>IA:</b> ${data.answer || "Respuesta recibida"}</p>`;
+
+        const data = await res.json();
+
+        // Quitar el mensaje de carga
+        document.querySelector(".loading")?.remove();
+
+        // Mostrar respuesta
+        let contenido = data.respuesta;
+        if (data.fuentes && data.fuentes.length > 0) {
+            contenido += `<br><small>📄 Fuentes: ${data.fuentes.join(", ")}</small>`;
+        }
+        agregarMensaje("bot", contenido);
+
     } catch (error) {
-        chatBox.innerHTML += `<p style="color:red;">Error de conexión con el backend.</p>`;
+        document.querySelector(".loading")?.remove();
+        agregarMensaje("bot", "❌ Error al conectar con el servidor.");
     }
 }
+
+function agregarMensaje(tipo, texto, clase = "") {
+    const chat = document.getElementById("chat-container");
+    const div = document.createElement("div");
+    div.className = `mensaje ${tipo} ${clase}`;
+    div.innerHTML = texto;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+// Enviar con Enter
+document.getElementById("input-usuario")
+    ?.addEventListener("keypress", e => {
+        if (e.key === "Enter") enviarMensaje();
+    });
+    
+    

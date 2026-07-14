@@ -1,45 +1,84 @@
+import json
 import requests
-from backend.config import DIFY_API_URL, DIFY_API_KEY # Asegúrate de que DIFY_API_KEY también se importa
 
-def consultar_dify(pregunta: str):
+from backend.config import DIFY_API_URL, DIFY_API_KEY
 
+
+def consultar_dify_stream(pregunta: str):
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {DIFY_API_KEY}" # Usa la DIFY_API_KEY importada
+        "Authorization": f"Bearer {DIFY_API_KEY}",
     }
 
     payload = {
         "inputs": {},
         "query": pregunta,
-        "response_mode": "blocking", # Puedes cambiar a "streaming" si lo necesitas
-        "user": "unique_user_id" # Asegúrate de que este ID de usuario sea único por sesión o usuario
+        "response_mode": "streaming",
+        "user": "proyecto_delfin_usuario",
     }
 
-    print("URL usada para la conexión con Dify:", DIFY_API_URL)
-    print("API KEY usada para la conexión con Dify (primeros 10 caracteres):", DIFY_API_KEY[:10] + "...")
-    
-
     try:
-        respuesta = requests.post(
-            DIFY_API_URL, # <<<<<<<<<<<<<<<<<<<< CORREGIDO: Ahora usa la variable DIFY_API_URL
+        with requests.post(
+            DIFY_API_URL,
             headers=headers,
-            json=payload
+            json=payload,
+            stream=True,
+            timeout=(30, 600),
+        ) as respuesta:
+
+            print("Status Dify:", respuesta.status_code)
+
+            respuesta.raise_for_status()
+
+            for linea in respuesta.iter_lines(
+                decode_unicode=True
+            ):
+                if not linea:
+                    continue
+
+                if not linea.startswith("data:"):
+                    continue
+
+                contenido = linea[5:].strip()
+
+                try:
+                    data = json.loads(contenido)
+
+                except json.JSONDecodeError:
+                    continue
+
+                evento = data.get("event")
+
+                if evento in (
+                    "message",
+                    "agent_message",
+                ):
+                    texto = data.get("answer", "")
+
+                    if texto:
+                        yield texto
+
+                elif evento == "error":
+                    mensaje = data.get(
+                        "message",
+                        "Error desconocido en Dify."
+                    )
+
+                    yield f"\n[ERROR DIFY] {mensaje}"
+
+                elif evento == "message_end":
+                    break
+
+    except requests.exceptions.Timeout:
+        yield (
+            "\nEl modelo local tardó demasiado "
+            "en responder."
         )
 
-        print("Status de la respuesta de Dify:", respuesta.status_code)
-        print("Cuerpo de la respuesta de Dify:")
-        print(respuesta.text)
+    except requests.exceptions.RequestException as error:
+        print("Error de conexión con Dify:", error)
 
-        respuesta.raise_for_status() # Esto lanzará una excepción para códigos de estado de error (4xx o 5xx)
-
-        return {
-            "status": respuesta.status_code,
-            "body": respuesta.text
-        }
-
-    except requests.exceptions.RequestException as e:
-        print(f"Error al conectar con Dify: {e}")
-        return {
-            "status": 500,
-            "body": f"Error al conectar con Dify: {e}"
-        }
+        yield (
+            "\nError al conectar con Dify: "
+            f"{str(error)}"
+        )

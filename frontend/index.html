@@ -1,17 +1,772 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
     <meta charset="UTF-8">
-    <title>Proyecto Delfín - RAG</title>
-    <link rel="stylesheet" href="style.css">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Asistente Documental Delfín
+    </title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #eef4f8;
+            height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-container {
+            width: 95%;
+            max-width: 950px;
+            height: 92vh;
+
+            background: white;
+
+            border-radius: 18px;
+
+            box-shadow:
+                0 15px 40px
+                rgba(0, 0, 0, 0.15);
+
+            display: flex;
+            flex-direction: column;
+
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background:
+                linear-gradient(
+                    135deg,
+                    #005b96,
+                    #0096c7
+                );
+
+            color: white;
+
+            padding: 20px;
+
+            display: flex;
+            align-items: center;
+
+            gap: 15px;
+        }
+
+        .logo {
+            width: 55px;
+            height: 55px;
+
+            border-radius: 50%;
+
+            background: white;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            font-size: 30px;
+        }
+
+        .header-info h1 {
+            font-size: 21px;
+            margin-bottom: 5px;
+        }
+
+        .header-info p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .status {
+            margin-top: 7px;
+
+            display: flex;
+            align-items: center;
+
+            gap: 6px;
+
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+
+            background: #62ff8e;
+
+            border-radius: 50%;
+        }
+
+        .chat-display {
+            flex: 1;
+
+            padding: 25px;
+
+            overflow-y: auto;
+
+            background: #f7fafc;
+
+            display: flex;
+            flex-direction: column;
+
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 78%;
+
+            padding: 14px 18px;
+
+            border-radius: 17px;
+
+            line-height: 1.5;
+
+            font-size: 15px;
+
+            white-space: pre-wrap;
+
+            word-break: break-word;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+
+            background: white;
+
+            color: #333;
+
+            border-bottom-left-radius: 4px;
+
+            box-shadow:
+                0 3px 8px
+                rgba(0, 0, 0, 0.08);
+        }
+
+        .user-message {
+            align-self: flex-end;
+
+            background: #0077b6;
+
+            color: white;
+
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-name {
+            font-size: 12px;
+
+            font-weight: bold;
+
+            margin-bottom: 7px;
+        }
+
+        .thinking {
+            display: flex;
+
+            gap: 5px;
+
+            align-items: center;
+        }
+
+        .thinking span {
+            width: 8px;
+            height: 8px;
+
+            background: #0077b6;
+
+            border-radius: 50%;
+
+            animation:
+                bounce 1.4s infinite;
+        }
+
+        .thinking span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .thinking span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+            }
+
+            30% {
+                transform: translateY(-7px);
+            }
+
+        }
+
+        .chat-input-container {
+            padding: 18px;
+
+            background: white;
+
+            border-top: 1px solid #ddd;
+
+            display: flex;
+
+            gap: 10px;
+        }
+
+        #userInput {
+            flex: 1;
+
+            padding: 14px 18px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 25px;
+
+            outline: none;
+
+            font-size: 15px;
+        }
+
+        #userInput:focus {
+            border-color: #0077b6;
+        }
+
+        #sendButton {
+            width: 110px;
+
+            border: none;
+
+            border-radius: 25px;
+
+            background: #0077b6;
+
+            color: white;
+
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+        #sendButton:hover {
+            background: #005b96;
+        }
+
+        #sendButton:disabled {
+            background: #9aaab5;
+
+            cursor: not-allowed;
+        }
+
+        @media (
+            max-width: 600px
+        ) {
+
+            .chat-container {
+                width: 100%;
+                height: 100vh;
+
+                border-radius: 0;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+
+            #sendButton {
+                width: 80px;
+            }
+
+        }
+
+    </style>
+
 </head>
+
+
 <body>
-    <div class="chat-container">
-        <h1>Consultar IA</h1>
-        <div id="chat-box"></div>
-        <input type="text" id="userInput" placeholder="Escribe tu pregunta...">
-        <button onclick="enviarPregunta()">Enviar</button>
+
+
+<div class="chat-container">
+
+
+    <header class="chat-header">
+
+        <div class="logo">
+            🐬
+        </div>
+
+
+        <div class="header-info">
+
+            <h1>
+                Asistente Documental Delfín
+            </h1>
+
+            <p>
+                Consulta inteligente de documentos académicos
+            </p>
+
+
+            <div class="status">
+
+                <div class="status-dot"></div>
+
+                Sistema local disponible
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <main
+        id="chatDisplay"
+        class="chat-display"
+    >
+
+        <div class="message bot-message">
+
+            <div class="message-name">
+                🐬 Delfín
+            </div>
+
+            Hola 👋
+
+            Soy el Asistente Documental Delfín.
+
+            Puedes realizar preguntas sobre la información
+            disponible en los documentos académicos cargados.
+
+        </div>
+
+    </main>
+
+
+    <div class="chat-input-container">
+
+        <input
+            id="userInput"
+            type="text"
+            placeholder="Pregunta sobre los documentos..."
+            autocomplete="off"
+        >
+
+
+        <button
+            id="sendButton"
+            onclick="enviarPregunta()"
+        >
+            Enviar
+        </button>
+
     </div>
-    <script src="script.js"></script>
+
+
+</div>
+
+
+<script>
+
+const API_URL =
+    "http://127.0.0.1:8000/api/chat";
+
+
+const input =
+    document.getElementById("userInput");
+
+
+const chatDisplay =
+    document.getElementById("chatDisplay");
+
+
+const sendButton =
+    document.getElementById("sendButton");
+
+
+input.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (event.key === "Enter") {
+
+            event.preventDefault();
+
+            enviarPregunta();
+
+        }
+
+    }
+);
+
+
+function moverChatAbajo() {
+
+    chatDisplay.scrollTop =
+        chatDisplay.scrollHeight;
+
+}
+
+
+function crearMensajeUsuario(texto) {
+
+    const mensaje =
+        document.createElement("div");
+
+
+    mensaje.classList.add(
+        "message",
+        "user-message"
+    );
+
+
+    const nombre =
+        document.createElement("div");
+
+
+    nombre.classList.add(
+        "message-name"
+    );
+
+
+    nombre.textContent =
+        "Tú";
+
+
+    const contenido =
+        document.createElement("div");
+
+
+    contenido.textContent =
+        texto;
+
+
+    mensaje.appendChild(nombre);
+
+    mensaje.appendChild(contenido);
+
+
+    chatDisplay.appendChild(mensaje);
+
+
+    moverChatAbajo();
+
+}
+
+
+function crearMensajeBot() {
+
+    const mensaje =
+        document.createElement("div");
+
+
+    mensaje.classList.add(
+        "message",
+        "bot-message"
+    );
+
+
+    const nombre =
+        document.createElement("div");
+
+
+    nombre.classList.add(
+        "message-name"
+    );
+
+
+    nombre.textContent =
+        "🐬 Delfín";
+
+
+    const contenido =
+        document.createElement("div");
+
+
+    contenido.classList.add(
+        "bot-content"
+    );
+
+
+    mensaje.appendChild(nombre);
+
+    mensaje.appendChild(contenido);
+
+
+    chatDisplay.appendChild(mensaje);
+
+
+    moverChatAbajo();
+
+
+    return contenido;
+
+}
+
+
+function mostrarPensando() {
+
+    const mensaje =
+        document.createElement("div");
+
+
+    mensaje.id =
+        "thinkingMessage";
+
+
+    mensaje.classList.add(
+        "message",
+        "bot-message"
+    );
+
+
+    mensaje.innerHTML = `
+
+        <div class="message-name">
+            🐬 Delfín
+        </div>
+
+        <div class="thinking">
+
+            <span></span>
+
+            <span></span>
+
+            <span></span>
+
+        </div>
+
+    `;
+
+
+    chatDisplay.appendChild(mensaje);
+
+
+    moverChatAbajo();
+
+}
+
+
+function eliminarPensando() {
+
+    const pensando =
+        document.getElementById(
+            "thinkingMessage"
+        );
+
+
+    if (pensando) {
+
+        pensando.remove();
+
+    }
+
+}
+
+
+async function enviarPregunta() {
+
+    const pregunta =
+        input.value.trim();
+
+
+    if (!pregunta) {
+
+        return;
+
+    }
+
+
+    crearMensajeUsuario(
+        pregunta
+    );
+
+
+    input.value = "";
+
+
+    input.disabled = true;
+
+    sendButton.disabled = true;
+
+
+    mostrarPensando();
+
+
+    try {
+
+        const response =
+            await fetch(
+                API_URL,
+                {
+
+                    method: "POST",
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json"
+
+                    },
+
+                    body: JSON.stringify({
+
+                        pregunta: pregunta
+
+                    })
+
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Error HTTP " +
+                response.status
+            );
+
+        }
+
+
+        if (!response.body) {
+
+            throw new Error(
+                "El navegador no recibió el stream."
+            );
+
+        }
+
+
+        const reader =
+            response.body.getReader();
+
+
+        const decoder =
+            new TextDecoder("utf-8");
+
+
+        let mensajeBot = null;
+
+        let respuestaCompleta = "";
+
+
+        while (true) {
+
+            const {
+                done,
+                value
+            } = await reader.read();
+
+
+            if (done) {
+
+                break;
+
+            }
+
+
+            const fragmento =
+                decoder.decode(
+                    value,
+                    {
+                        stream: true
+                    }
+                );
+
+
+            if (!mensajeBot) {
+
+                eliminarPensando();
+
+
+                mensajeBot =
+                    crearMensajeBot();
+
+            }
+
+
+            respuestaCompleta +=
+                fragmento;
+
+
+            mensajeBot.textContent =
+                respuestaCompleta;
+
+
+            moverChatAbajo();
+
+        }
+
+
+        if (!mensajeBot) {
+
+            eliminarPensando();
+
+
+            mensajeBot =
+                crearMensajeBot();
+
+
+            mensajeBot.textContent =
+                "Dify no generó una respuesta.";
+
+        }
+
+
+    } catch (error) {
+
+        eliminarPensando();
+
+
+        const mensajeBot =
+            crearMensajeBot();
+
+
+        mensajeBot.textContent =
+            "Error al conectar con el servidor.";
+
+
+        console.error(
+            "Error del chatbot:",
+            error
+        );
+
+    } finally {
+
+        input.disabled = false;
+
+        sendButton.disabled = false;
+
+
+        input.focus();
+
+    }
+
+}
+
+</script>
+
+
 </body>
+
 </html>
+
