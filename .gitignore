@@ -11,6 +11,8 @@ Base_Conocimiento/
 *.txt
 venv/
 .venv/
-
+.env
+.env.*
+!.env.example
 # EXCEPCIÓN: Permitir el archivo de dependencias
 !requirements.txt
